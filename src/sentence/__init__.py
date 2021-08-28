@@ -1,6 +1,6 @@
 import re
 from dictd import Dictd
-from pprint import pprint
+from babyname import BabyName
 
 
 class Sentence:
@@ -54,6 +54,12 @@ class Sentence:
 
 
     @classmethod
+    def _is_name_(cls, word):
+        name = BabyName().lookup(word)
+        return name is not None
+
+
+    @classmethod
     def _is_english_word_(cls, word):
         word = re.sub(r'\W+$', "", word)
         result = Dictd.lookup(word)
@@ -72,26 +78,28 @@ class Sentence:
 
     @classmethod
     def _is_eos_str_(cls, token):
-
         for left_q, right_q in cls.Quotes.items():
             token = token.rstrip(left_q).rstrip(right_q)
-
         if not any(map(lambda eos: token.endswith(eos), cls.EndOfSentenceChars)):
             return False
-
         return True
 
 
     @classmethod
     def _cleanup_(cls, text):
         text = text.replace('[', ' [')
+        text = re.sub(r'\s+', ' ', text)
         text = re.sub(r'[.][ ][.]', '..', text)
         text = re.sub(r'[.]{3,}', '...', text)
-        acronyms = re.findall(r'([ ]([A-Z])[.]([ ]?([A-Z])[.])+)', text)
+        acronyms = re.findall(r'(\s([A-Z])[.](\s*([A-Z])[.])+)', text)
         for acronym in acronyms:
-            revised = ' ' + acronym[0].replace(' ', "").replace('.', "")
-            text = text.replace(acronym[0], revised)
-        text = re.sub(r'\s+', ' ', text)
+            revised_mid = ' ' + acronym[0].replace(' ', "").replace('.', "")
+            revised_eos = f'{revised_mid}. \\1'
+            acronym_re = re.sub('\\s+', '\\\\s+', acronym[0]).replace('.', '[.]')
+            regex_mid = re.compile(acronym_re)
+            regex_eos = re.compile(f'{acronym_re}\\s+([A-Z])')
+            text = re.sub(regex_eos, revised_eos, text)
+            text = re.sub(regex_mid, revised_mid, text)
         return text.strip()
 
 
@@ -136,10 +144,11 @@ class Sentence:
             if cls._is_abbreviation_(last_token):
                 return False
 
-            if len(last_token) == 1    \
-              and last_token.isupper() \
-              and not cls._is_english_word_(next_token):
-                return False
+            if len(last_token) == 1 and last_token.isupper():
+                if cls._is_name_(next_token):
+                    return False
+                if not cls._is_english_word_(next_token):
+                    return False
 
         return True
 

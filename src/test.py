@@ -44,7 +44,22 @@ class TestDictionaryParsers(unittest.TestCase):
         self.assertEqual(got, expect, 'samples')
 
 
-    @unittest.skip
+    def test_fbi(self):
+        text = '''
+            The F. B.
+            I. headquarters is the J. Edgar Hoover Building, located in Washington, D.C.
+            The mission of the FBI follows.
+        '''
+        expect = [
+            'The FBI headquarters is the J. Edgar Hoover Building, located in Washington, DC.',
+            'The mission of the FBI follows.',
+        ]
+
+        got = list(Sentence.parse(text))
+
+        self.assertEqual(got, expect, 'fbi')
+
+
     def test_caninae(self):
         text = '''
 Their fossils were first found in North America and dated to the Oligocene era, then spreading to Asia at the end of the Miocene era, some 7 million to 8 million years ago.
@@ -61,11 +76,10 @@ They were small and weighed around 2 kg.
         ]
 
         got = list(Sentence.parse(text))
-    
+
         self.assertEqual(got, expect, 'caninae')
 
 
-    @unittest.skip
     def test_amazon(self):
         text = '''
 This pump is by far the very best one that I have ever used. It totally rocks in my 55-gallon aquarium. The only thing that you need to be concerned with is that it simply pumps a lot more air than you are used too, so you'd better have plenty of airstones on hand when it comes time to change them out because you don't want to back this thing up and damage anything.
@@ -84,7 +98,6 @@ This pump is by far the very best one that I have ever used. It totally rocks in
         self.assertEqual(got, expect, 'Amazon')
 
 
-    @unittest.skip
     def test_park_burgess(self):
         text = '''
 Men were long in learning that Man's power of modifying
@@ -140,7 +153,6 @@ human speculation.[4]
             'character of political action: in other words, introducing into the study of '
             'social phenomena the same positive spirit which has regenerated every other '
             'branch of human speculation.',
-            '[4]'
         ]
 
         got = list(Sentence.parse(text))
@@ -148,7 +160,6 @@ human speculation.[4]
         self.assertEqual(got, expect, 'Park-Burgess')
 
 
-    @unittest.skip
     def test_lippmann(self):
         text = '''
 But the most interesting kind of portraiture is that which arises
@@ -189,7 +200,6 @@ spring."
         self.assertEqual(got, expect, 'Lippmann')
 
 
-    @unittest.skip
     def test_mccain(self):
         text = '''
 26. Ration parties and parties carrying material for repairs,
