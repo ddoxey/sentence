@@ -1,8 +1,42 @@
 import unittest
 from sentence import Sentence
 
+from pprint import pprint
+
 
 class TestDictionaryParsers(unittest.TestCase):
+
+    def test_format_acronyms(self):
+
+        acronyms = [
+            ' F. B. I. ',
+            ' F.B.I. ',
+            ' F.B.I.',
+            ' _F._B._I._ ',
+            ' _F.B.I._ ',
+            ' _F.B.I._',
+            ' _F.B.I._ Today',
+            ' _F.B.I._ today',
+        ]
+
+        expectations = [
+            ' FBI ',
+            ' FBI ',
+            ' FBI.',
+            ' _FBI_ ',
+            ' _FBI_ ',
+            ' _FBI._',
+            ' _FBI_ Today',
+            ' _FBI_ today',
+        ]
+
+        got = []
+
+        for acronym in acronyms:
+
+            got.append(Sentence._format_acronyms_(acronym))
+
+        self.assertEqual(got, expectations, 'acronyms')
 
 
     def test_samples(self):
@@ -49,15 +83,20 @@ class TestDictionaryParsers(unittest.TestCase):
             The F. B.
             I. headquarters is the J. Edgar Hoover Building, located in Washington, D.C.
             The mission of the FBI follows.
+            The current FBI Director is Christopher A.
+            Wray appointed by President Donald Trump.
+            Other things are also located in Washington, D.C.
         '''
         expect = [
-            'The FBI headquarters is the J. Edgar Hoover Building, located in Washington, DC.',
+            'The FBI headquarters is the J. Edgar Hoover Building, located in Washington, DC '
             'The mission of the FBI follows.',
+            'The current FBI Director is Christopher A. Wray appointed by President Donald Trump.',
+            'Other things are also located in Washington, DC.'
         ]
 
         got = list(Sentence.parse(text))
 
-        self.assertEqual(got, expect, 'fbi')
+        self.assertEqual(got, expect, 'FBI')
 
 
     def test_caninae(self):
@@ -77,7 +116,7 @@ They were small and weighed around 2 kg.
 
         got = list(Sentence.parse(text))
 
-        self.assertEqual(got, expect, 'caninae')
+        self.assertEqual(got, expect, 'Caninae')
 
 
     def test_amazon(self):
@@ -247,7 +286,7 @@ with a dirty rifle will be made a prisoner.
 
         got = list(Sentence.parse(text))
 
-        self.assertEqual(got, expect, "OK")
+        self.assertEqual(got, expect, 'McCain')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 import re
 from dictd import Dictd
 from babyname import BabyName
+from lastname import LastName
 
 
 class Sentence:
@@ -13,6 +14,8 @@ class Sentence:
         'n',
         'e',
         's',
+        'v',
+        'vs',
         'w',
     ]
 
@@ -56,7 +59,22 @@ class Sentence:
     @classmethod
     def _is_name_(cls, word):
         name = BabyName().lookup(word)
+        if name is None:
+            name = LastName().lookup(word)
         return name is not None
+
+
+    @classmethod
+    def _is_acronym_(cls, word):
+        word = re.sub(r'\W+$', "", word)
+        if not word.isupper():
+            return False
+        result = Dictd.lookup(word)
+        if result is None:
+            return False
+        if 'vera' in result:
+            return True
+        return False
 
 
     @classmethod
@@ -86,20 +104,27 @@ class Sentence:
 
 
     @classmethod
+    def _format_acronyms_(cls, text):
+        acronyms = re.findall(r'([_\s]([A-Z])[.]([_\s]*([A-Z])[.][_]?)+)', text)
+        for acronym in [a[0] for a in acronyms]:
+            end = acronym[-1] if acronym[-1] != '.' else ""
+            revised_mid = re.sub(r'(\w)[._\s]+', r'\1', acronym) + end
+            revised_eot = re.sub(r'_[.]$', '._', revised_mid + '.')
+            acronym_re = re.sub(r'(\W)', r'[\1]', acronym)
+            regex_mid = re.compile(acronym_re)
+            regex_eot = re.compile(f'{acronym_re}$')
+            text = re.sub(regex_eot, revised_eot, text)
+            text = re.sub(regex_mid, revised_mid, text)
+
+        return text
+
+    @classmethod
     def _cleanup_(cls, text):
         text = text.replace('[', ' [')
         text = re.sub(r'\s+', ' ', text)
         text = re.sub(r'[.][ ][.]', '..', text)
         text = re.sub(r'[.]{3,}', '...', text)
-        acronyms = re.findall(r'(\s([A-Z])[.](\s*([A-Z])[.])+)', text)
-        for acronym in acronyms:
-            revised_mid = ' ' + acronym[0].replace(' ', "").replace('.', "")
-            revised_eos = f'{revised_mid}. \\1'
-            acronym_re = re.sub('\\s+', '\\\\s+', acronym[0]).replace('.', '[.]')
-            regex_mid = re.compile(acronym_re)
-            regex_eos = re.compile(f'{acronym_re}\\s+([A-Z])')
-            text = re.sub(regex_eos, revised_eos, text)
-            text = re.sub(regex_mid, revised_mid, text)
+        text = cls._format_acronyms_(text.strip())
         return text.strip()
 
 
