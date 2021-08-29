@@ -98,6 +98,7 @@ class Sentence:
     def _is_eos_str_(cls, token):
         for left_q, right_q in cls.Quotes.items():
             token = token.rstrip(left_q).rstrip(right_q)
+        token = token.rstrip('_')
         if not any(map(lambda eos: token.endswith(eos), cls.EndOfSentenceChars)):
             return False
         return True

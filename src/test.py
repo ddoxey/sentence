@@ -85,13 +85,13 @@ class TestDictionaryParsers(unittest.TestCase):
             The mission of the FBI follows.
             The current FBI Director is Christopher A.
             Wray appointed by President Donald Trump.
-            Other things are also located in Washington, D.C.
+            Other things are also located in _Washington,_D.C._
         '''
         expect = [
             'The FBI headquarters is the J. Edgar Hoover Building, located in Washington, DC '
             'The mission of the FBI follows.',
             'The current FBI Director is Christopher A. Wray appointed by President Donald Trump.',
-            'Other things are also located in Washington, DC.'
+            'Other things are also located in _Washington,_DC._'
         ]
 
         got = list(Sentence.parse(text))
